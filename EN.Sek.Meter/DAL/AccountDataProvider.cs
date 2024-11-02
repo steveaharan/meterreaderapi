@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EN.Sek.Meter.DAL
 {
-	public class AccountDataProvider
+	public class AccountDataProvider : IAccountDataProvider
 	{
 		private readonly ApplicationDbContext _context;
 
