@@ -15,7 +15,7 @@ namespace EN.Sek.Meter.Controllers
 			_meterReadingManager = meterReadingManager;
 		}
 
-		[HttpPost]
+		[HttpPost("meter-reading-uploads")]
 		public async Task<IActionResult> MeterReadingUploads(IFormFile meterReadingCSV)
 		{
 			if (meterReadingCSV == null)

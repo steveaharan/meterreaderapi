@@ -1,12 +1,12 @@
+using EN.Sek.Meter.BLL;
+using EN.Sek.Meter.DAL;
+using EN.Sek.Meter.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore;
-using EN.Sek.Meter.Entities;
-using EN.Sek.Meter.BLL;
-using EN.Sek.Meter.DAL;
 
 public class Startup
 {
@@ -23,28 +23,34 @@ public class Startup
 		services.AddControllers();
 
 		services.AddDbContext<ApplicationDbContext>(options =>
-			options.UseSqlServer(
-				Configuration.GetConnectionString("DefaultConnection"),
-				b => b.MigrationsAssembly("MeterReadingApi")));
+			options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-		services.AddScoped<IMeterReadingManager, MeterReadingManager>();
+		// Register the Swagger generator, defining one or more Swagger documents
+		services.AddSwaggerGen();
+
 		services.AddScoped<IAccountDataProvider, AccountDataProvider>();
 		services.AddScoped<IMeterReadingDataProvider, MeterReadingDataProvider>();
+		services.AddScoped<IMeterReadingManager, MeterReadingManager>();
 	}
 
+	// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 	{
 		if (env.IsDevelopment())
 		{
 			app.UseDeveloperExceptionPage();
 		}
-		else
-		{
-			app.UseExceptionHandler("/Home/Error");
-			app.UseHsts();
-		}
 
-		app.UseStaticFiles();
+		// Enable middleware to serve generated Swagger as a JSON endpoint.
+		app.UseSwagger();
+
+		// Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+		// specifying the Swagger JSON endpoint.
+		app.UseSwaggerUI(c =>
+		{
+			c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+			c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
+		});
 
 		app.UseRouting();
 
@@ -52,7 +58,7 @@ public class Startup
 
 		app.UseEndpoints(endpoints =>
 		{
-			// endpoints.MapControllers();
+			endpoints.MapControllers();
 		});
 	}
 }
