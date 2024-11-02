@@ -6,12 +6,13 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 [TestClass]
 public class AccountDataProviderTests
 {
-    private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
+    private DbContextOptions<ApplicationDbContext> _dbContextOptions;
 
-    public AccountDataProviderTests()
+    [TestInitialize]
+    public void TestInitialize()
     {
         _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: "TestDatabase")
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // Use a unique database name for each test
             .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
     }
@@ -20,26 +21,26 @@ public class AccountDataProviderTests
     public async Task GetAccountByIdAsync_AccountExists_ReturnsAccount()
     {
         // Arrange
-        var context = new ApplicationDbContext(_dbContextOptions);
-        var account = new Account { Id = 100, FirstName = "John", LastName = "Doe" };
+        using var context = new ApplicationDbContext(_dbContextOptions);
+        var account = new Account { Id = 1, FirstName = "John", LastName = "Doe" };
         context.Account.Add(account);
         await context.SaveChangesAsync();
 
         var provider = new AccountDataProvider(context);
 
         // Act
-        var result = await provider.GetAccountByIdAsync(100);
+        var result = await provider.GetAccountByIdAsync(1);
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(100, result.Id);
+        Assert.AreEqual(1, result.Id);
     }
 
     [TestMethod]
     public async Task GetAccountByIdAsync_AccountDoesNotExist_ThrowsInvalidOperationException()
     {
         // Arrange
-        var context = new ApplicationDbContext(_dbContextOptions);
+        using var context = new ApplicationDbContext(_dbContextOptions);
         var provider = new AccountDataProvider(context);
 
         // Act & Assert
@@ -50,7 +51,7 @@ public class AccountDataProviderTests
     public async Task CreateAccountAsync_ValidAccount_ReturnsCreatedAccount()
     {
         // Arrange
-        var context = new ApplicationDbContext(_dbContextOptions);
+        using var context = new ApplicationDbContext(_dbContextOptions);
         var provider = new AccountDataProvider(context);
         var account = new Account { FirstName = "Jane", LastName = "Doe" };
 
@@ -73,11 +74,14 @@ public class AccountDataProviderTests
     public async Task UpdateAccountAsync_ValidAccount_ReturnsUpdatedAccount()
     {
         // Arrange
-        var context = new ApplicationDbContext(_dbContextOptions);
+        using var context = new ApplicationDbContext(_dbContextOptions);
         var provider = new AccountDataProvider(context);
-        var account = new Account { Id = 200, FirstName = "John", LastName = "Doe" };
+        var account = new Account { Id = 1, FirstName = "John", LastName = "Doe" };
         context.Account.Add(account);
         await context.SaveChangesAsync();
+
+        // Detach the entity to simulate a real-world scenario where the entity is fetched and then updated
+        context.Entry(account).State = EntityState.Detached;
 
         // Update account details
         account.FirstName = "Jane";
@@ -102,17 +106,31 @@ public class AccountDataProviderTests
     public async Task DeleteAccountAsync_AccountExists_DeletesAccount()
     {
         // Arrange
-        var context = new ApplicationDbContext(_dbContextOptions);
+        using var context = new ApplicationDbContext(_dbContextOptions);
         var provider = new AccountDataProvider(context);
-        var account = new Account { Id = 300, FirstName = "John", LastName = "Doe" };
+        var account = new Account { Id = 1, FirstName = "John", LastName = "Doe" };
         context.Account.Add(account);
         await context.SaveChangesAsync();
 
+        // Detach the entity to simulate a real-world scenario where the entity is fetched and then deleted
+        context.Entry(account).State = EntityState.Detached;
+
         // Act
-        await provider.DeleteAccountAsync(300);
+        await provider.DeleteAccountAsync(1);
 
         // Assert
-        var deletedAccount = await context.Account.FindAsync(300);
+        var deletedAccount = await context.Account.FindAsync(1);
         Assert.IsNull(deletedAccount);
+    }
+
+    [TestMethod]
+    public async Task DeleteAccountAsync_AccountDoesNotExist_ThrowsArgumentException()
+    {
+        // Arrange
+        using var context = new ApplicationDbContext(_dbContextOptions);
+        var provider = new AccountDataProvider(context);
+
+        // Act & Assert
+        await Assert.ThrowsExceptionAsync<ArgumentException>(() => provider.DeleteAccountAsync(99));
     }
 }
