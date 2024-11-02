@@ -26,6 +26,11 @@ namespace EN.Sek.Meter.DAL
 			return meterReading;
 		}
 
+		public async Task<bool> MeterReadingExistsByAccountIdAndDateAsync(MeterReading meterReading)
+		{
+			return await _context.MeterReading.AnyAsync(x => x.AccountId == meterReading.AccountId && x.ReadingDateTime == meterReading.ReadingDateTime);
+		}
+
 		public async Task<MeterReading> CreateMeterReadingAsync(MeterReading meterReading)
 		{
 			_context.MeterReading.Add(meterReading);

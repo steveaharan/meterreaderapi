@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 [TestClass]
 public class AccountDataProviderTests
 {
-    private DbContextOptions<ApplicationDbContext> _dbContextOptions;
+    private DbContextOptions<ApplicationDbContext>? _dbContextOptions;
 
     [TestInitialize]
     public void TestInitialize()
@@ -18,7 +18,7 @@ public class AccountDataProviderTests
     }
 
     [TestMethod]
-    public async Task GetAccountByIdAsync_AccountExists_ReturnsAccount()
+    public async Task AccountExists_ReturnsBool()
     {
         // Arrange
         using var context = new ApplicationDbContext(_dbContextOptions);
@@ -29,22 +29,11 @@ public class AccountDataProviderTests
         var provider = new AccountDataProvider(context);
 
         // Act
-        var result = await provider.GetAccountByIdAsync(1);
+        var result = await provider.AccountExists(1);
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(1, result.Id);
-    }
-
-    [TestMethod]
-    public async Task GetAccountByIdAsync_AccountDoesNotExist_ThrowsInvalidOperationException()
-    {
-        // Arrange
-        using var context = new ApplicationDbContext(_dbContextOptions);
-        var provider = new AccountDataProvider(context);
-
-        // Act & Assert
-        await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => provider.GetAccountByIdAsync(99));
+        Assert.AreEqual(true, result);
     }
 
     [TestMethod]

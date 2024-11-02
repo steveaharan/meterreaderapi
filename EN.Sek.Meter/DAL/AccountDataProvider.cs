@@ -12,7 +12,7 @@ namespace EN.Sek.Meter.DAL
 			_context = context;
 		}
 
-		public async Task<Account> GetAccountByIdAsync(int id)
+		public async Task<bool> AccountExists(int id)
 		{
 			var account = await _context.Account
 				.Include(a => a.MeterReadings)
@@ -20,10 +20,10 @@ namespace EN.Sek.Meter.DAL
 
 			if (account == null)
 			{
-				throw new InvalidOperationException($"Account with ID {id} not found.");
+				return false;
 			}
 
-			return account;
+			return true;
 		}
 
 		public async Task<Account> CreateAccountAsync(Account account)

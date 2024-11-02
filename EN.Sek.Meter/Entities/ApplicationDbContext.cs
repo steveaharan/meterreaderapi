@@ -17,7 +17,14 @@ namespace EN.Sek.Meter.Entities
 			modelBuilder.Entity<MeterReading>()
 				.HasOne(m => m.Account)
 				.WithMany(a => a.MeterReadings)
-				.HasForeignKey(m => m.AccountId);
+				.HasForeignKey(m => m.AccountId)
+				;
+
+			modelBuilder.Entity<MeterReading>(entity =>
+			{
+				entity.HasKey(e => e.Id);
+				entity.Property(e => e.Id).ValueGeneratedOnAdd();
+			});
 
 			base.OnModelCreating(modelBuilder);
 		}

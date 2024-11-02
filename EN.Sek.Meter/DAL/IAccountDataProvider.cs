@@ -5,7 +5,7 @@ namespace EN.Sek.Meter.DAL
 {
 	public interface IAccountDataProvider
 	{
-		Task<Account> GetAccountByIdAsync(int id);
+		Task<bool> AccountExists(int id);
 		Task<Account> CreateAccountAsync(Account account);
 		Task<Account> UpdateAccountAsync(Account account);
 		Task DeleteAccountAsync(int id);
