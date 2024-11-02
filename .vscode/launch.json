@@ -1,0 +1,18 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+	  {
+		"name": "Debug .NET Core Project",
+		"type": "coreclr",
+		"request": "launch",
+		"preLaunchTask": "build",
+		"program": "${workspaceFolder}/EN.Sek.Meter/bin/Debug/net8.0/EN.Sek.Meter.dll",
+		"args": [],
+		"cwd": "${workspaceFolder}/EN.Sek.Meter",
+		"stopAtEntry": false,
+		"console": "internalConsole",
+		"internalConsoleOptions": "openOnSessionStart",
+		"justMyCode": true
+	  }
+	]
+  }

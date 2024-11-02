@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EN.Sek.Meter.DAL
 {
-	public class MeterReadingDataProvider
+	public class MeterReadingDataProvider : IMeterReadingDataProvider
 	{
 		private readonly ApplicationDbContext _context;
 

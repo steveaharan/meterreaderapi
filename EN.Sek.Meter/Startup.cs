@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using EN.Sek.Meter.Entities;
+using EN.Sek.Meter.BLL;
+using EN.Sek.Meter.DAL;
 
 public class Startup
 {
@@ -24,6 +26,10 @@ public class Startup
 			options.UseSqlServer(
 				Configuration.GetConnectionString("DefaultConnection"),
 				b => b.MigrationsAssembly("MeterReadingApi")));
+
+		services.AddScoped<IMeterReadingManager, MeterReadingManager>();
+		services.AddScoped<IAccountDataProvider, AccountDataProvider>();
+		services.AddScoped<IMeterReadingDataProvider, MeterReadingDataProvider>();
 	}
 
 	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -38,7 +44,6 @@ public class Startup
 			app.UseHsts();
 		}
 
-		app.UseHttpsRedirection();
 		app.UseStaticFiles();
 
 		app.UseRouting();
@@ -47,7 +52,7 @@ public class Startup
 
 		app.UseEndpoints(endpoints =>
 		{
-			endpoints.MapControllers();
+			// endpoints.MapControllers();
 		});
 	}
 }
