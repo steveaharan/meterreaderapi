@@ -5,7 +5,7 @@ namespace EN.Sek.Meter.DAL
 {
 	public interface IMeterReadingDataProvider
 	{
-		Task<MeterReading> GetMeterByIdAsync(int id);
+		Task<MeterReading> GetMeterReadingByIdAsync(int id);
 		Task<MeterReading> CreateMeterReadingAsync(MeterReading meterReading);
 	}
 }

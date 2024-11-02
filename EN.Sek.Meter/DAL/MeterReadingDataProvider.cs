@@ -12,7 +12,7 @@ namespace EN.Sek.Meter.DAL
 			_context = context;
 		}
 
-		public async Task<MeterReading> GetMeterByIdAsync(int id)
+		public async Task<MeterReading> GetMeterReadingByIdAsync(int id)
 		{
 			var meterReading = await _context.MeterReading
 				.Include(x => x.Account)
