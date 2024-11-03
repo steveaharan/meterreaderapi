@@ -4,111 +4,51 @@ using EN.Sek.Meter.DAL;
 using Moq;
 using EN.Sek.Meter.BLL;
 using Microsoft.AspNetCore.Http;
+using EN.Sek.Meter.BLL.Models;
 
 [TestClass]
 public class MeterReadingManagerTests
 {
-	[TestMethod]
-	public async Task BulkMeterReadingAsync_ValidCSV_ReturnsExpectedResponse()
+	[DataTestMethod]
+	[DataRow("AccountId,MeterReadValue,MeterReadingDateTime\n1,10000,2023-01-01T00:00:00", true, "")]
+	[DataRow("AccountId,MeterReadValue,MeterReadingDateTime\n1,123,2023-01-01T00:00:00", false, "Invalid meter reading value. It must be exactly 5 numeric characters.")]
+	public async Task BulkMeterReadingAsync_ReturnsExpectedResponse(string csvRow, bool isValid, string failReason)
 	{
 		// Arrange
-		var csvContent = "AccountId,MeterReadValue,MeterReadingDateTime\n1,10000,2023-01-01T00:00:00\n2,20000,2023-01-02T00:00:00";
+		var csvContent = csvRow;
 		var csvBytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
 		var formFile = new FormFile(new MemoryStream(csvBytes), 0, csvBytes.Length, "meterReadingCSV", "meterReading.csv");
 
-		var _mockAccountDataProvider = new Mock<IAccountDataProvider>();
-		_mockAccountDataProvider.Setup(x => x.AccountExists(It.IsAny<int>())).ReturnsAsync(true);
+		var _mockMeterReadingValidator = new Mock<IMeterReadingValidator>();
+		_mockMeterReadingValidator.Setup(x => x.ValidateMeterReadingAsync(It.IsAny<BulkMeterReadingCSV>())).ReturnsAsync((isValid, failReason));
 
-		var _mockMeterReadingDataProvider = new Mock<IMeterReadingDataProvider>();
-		_mockMeterReadingDataProvider.Setup(x => x.MeterReadingExistsByAccountIdAndDateAsync(It.IsAny<MeterReading>())).ReturnsAsync(false);
-
-		var _meterReadingManager = CreateManager(moqAccountDataProvider: _mockAccountDataProvider, moqMeterReadingDataProvider: _mockMeterReadingDataProvider);
+		var _meterReadingManager = CreateManager(moqMeterReadingValidator: _mockMeterReadingValidator);
 
 		// Act
 		var response = await _meterReadingManager.BulkMeterReadingAsync(formFile);
 
 		// Assert
 		Assert.IsNotNull(response);
-		Assert.AreEqual(2, response.SuccessCount);
-	}
-
-	[TestMethod]
-	public async Task BulkMeterReadingAsync_NoAccount_ReturnsExpectedResponse()
-	{
-		// Arrange
-		var csvContent = "AccountId,MeterReadValue,MeterReadingDateTime\n1,10000,2023-01-01T00:00:00\n2,20000,2023-01-02T00:00:00";
-		var csvBytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
-		var formFile = new FormFile(new MemoryStream(csvBytes), 0, csvBytes.Length, "meterReadingCSV", "meterReading.csv");
-
-		var _mockAccountDataProvider = new Mock<IAccountDataProvider>();
-		_mockAccountDataProvider.Setup(x => x.AccountExists(It.IsAny<int>())).ReturnsAsync(false);
-
-		var _mockMeterReadingDataProvider = new Mock<IMeterReadingDataProvider>();
-		_mockMeterReadingDataProvider.Setup(x => x.MeterReadingExistsByAccountIdAndDateAsync(It.IsAny<MeterReading>())).ReturnsAsync(false);
-
-		var _meterReadingManager = CreateManager(moqAccountDataProvider: _mockAccountDataProvider, moqMeterReadingDataProvider: _mockMeterReadingDataProvider);
-
-		// Act
-		var response = await _meterReadingManager.BulkMeterReadingAsync(formFile);
-
-		// Assert
-		Assert.IsNotNull(response);
-		Assert.AreEqual(0, response.SuccessCount);
-	}
-
-	[TestMethod]
-	public async Task BulkMeterReadingAsync_InValidRowsOnCSV_ReturnsExpectedResponse()
-	{
-		// Arrange
-		var csvContent = "AccountId,MeterReadValue,MeterReadingDateTime\n1,VOID,2023-01-01T00:00:00\n2,200,2023-01-02T00:00:00";
-		var csvBytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
-		var formFile = new FormFile(new MemoryStream(csvBytes), 0, csvBytes.Length, "meterReadingCSV", "meterReading.csv");
-
-		var _mockAccountDataProvider = new Mock<IAccountDataProvider>();
-		_mockAccountDataProvider.Setup(x => x.AccountExists(It.IsAny<int>())).ReturnsAsync(true);
-
-		var _mockMeterReadingDataProvider = new Mock<IMeterReadingDataProvider>();
-		_mockMeterReadingDataProvider.Setup(x => x.MeterReadingExistsByAccountIdAndDateAsync(It.IsAny<MeterReading>())).ReturnsAsync(false);
-
-		var _meterReadingManager = CreateManager(moqAccountDataProvider: _mockAccountDataProvider, moqMeterReadingDataProvider: _mockMeterReadingDataProvider);
-
-		// Act
-		var response = await _meterReadingManager.BulkMeterReadingAsync(formFile);
-
-		// Assert
-		Assert.IsNotNull(response);
-		Assert.AreEqual(0, response.SuccessCount);
-	}
-
-	[TestMethod]
-	public async Task MeterReadingExistsByAccountIdAndDateAsync_ValidMeterReading_ReturnsTrue()
-	{
-		var csvContent = "AccountId,MeterReadValue,MeterReadingDateTime\n1,10000,2023-01-01T00:00:00\n2,10000,2023-01-02T00:00:00";
-		var csvBytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
-		var formFile = new FormFile(new MemoryStream(csvBytes), 0, csvBytes.Length, "meterReadingCSV", "meterReading.csv");
-
-		var _mockAccountDataProvider = new Mock<IAccountDataProvider>();
-		_mockAccountDataProvider.Setup(x => x.AccountExists(It.IsAny<int>())).ReturnsAsync(true);
-
-		var _mockMeterReadingDataProvider = new Mock<IMeterReadingDataProvider>();
-		_mockMeterReadingDataProvider.Setup(x => x.MeterReadingExistsByAccountIdAndDateAsync(It.IsAny<MeterReading>())).ReturnsAsync(true);
-
-		var _meterReadingManager = CreateManager(moqAccountDataProvider: _mockAccountDataProvider, moqMeterReadingDataProvider: _mockMeterReadingDataProvider);
-
-		// Act
-		var response = await _meterReadingManager.BulkMeterReadingAsync(formFile);
-
-		// Assert
-		Assert.IsNotNull(response);
-		Assert.AreEqual(0, response.SuccessCount);
+		if (!isValid)
+		{
+			Assert.AreEqual(0, response.SuccessCount);
+			Assert.AreEqual(1, response.FailedCount);
+			Assert.IsTrue(response.FailedReadings[0].Contains(failReason));
+		}
+		else
+		{
+			Assert.AreEqual(1, response.SuccessCount);
+			Assert.AreEqual(0, response.FailedCount);
+			Assert.AreEqual(0, response.FailedReadings.Count);
+		}
 	}
 
 	private MeterReadingManager CreateManager(
 		IMock<IMeterReadingDataProvider> moqMeterReadingDataProvider = null,
-		IMock<IAccountDataProvider> moqAccountDataProvider = null)
+		IMock<IMeterReadingValidator> moqMeterReadingValidator = null)
 	{
 		return new MeterReadingManager(
 			moqMeterReadingDataProvider?.Object ?? new Mock<IMeterReadingDataProvider>().Object,
-			moqAccountDataProvider?.Object ?? new Mock<IAccountDataProvider>().Object);
+			moqMeterReadingValidator?.Object ?? new Mock<IMeterReadingValidator>().Object);
 	}
 }

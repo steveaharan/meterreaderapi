@@ -31,6 +31,7 @@ public class Startup
 		services.AddScoped<IAccountDataProvider, AccountDataProvider>();
 		services.AddScoped<IMeterReadingDataProvider, MeterReadingDataProvider>();
 		services.AddScoped<IMeterReadingManager, MeterReadingManager>();
+		services.AddScoped<IMeterReadingValidator, MeterReadingValidator>();
 	}
 
 	// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
