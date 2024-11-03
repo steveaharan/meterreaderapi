@@ -51,6 +51,7 @@ namespace EN.Sek.Meter.BLL
 					else
 					{
 						response.FailedCount++;
+						failureReason = $"{failureReason} (AccountId: {row.AccountId}, MeterReadValue: {row.MeterReadValue}, ReadingDateTime: {row.MeterReadingDateTime})";
 						response.FailedReadings.Add(failureReason);
 					}
 				}

@@ -1,3 +1,4 @@
+using EN.Sek.Meter.Entities.Seeding;
 using Microsoft.EntityFrameworkCore;
 
 namespace EN.Sek.Meter.Entities
@@ -25,6 +26,8 @@ namespace EN.Sek.Meter.Entities
 				entity.HasKey(e => e.Id);
 				entity.Property(e => e.Id).ValueGeneratedOnAdd();
 			});
+
+			modelBuilder.ApplyConfiguration(new AccountSeeding());
 
 			base.OnModelCreating(modelBuilder);
 		}
