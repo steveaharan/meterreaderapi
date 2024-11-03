@@ -47,3 +47,14 @@ Example output:
 "Account does not exist. (AccountId: 11248, MeterReadValue: 12345, ReadingDateTime: 26/05/2019 09:24)"
 ]
 }
+
+# ClientApp
+
+Built in Angular, VERY basic MVP UI to allow a user to select a file and post it to the api.
+
+To run:
+
+npm install
+npm run start
+
+Open http://localhost:4200/ in your browser

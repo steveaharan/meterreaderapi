@@ -1,0 +1,32 @@
+<mat-toolbar color="primary">
+  <mat-toolbar-row>
+    <span>Entek - Meter Reading Upload</span>
+    <span class="spacer"></span>
+    <button mat-icon-button>
+      <mat-icon>home</mat-icon>
+    </button>
+    <button mat-icon-button>
+      <mat-icon>info</mat-icon>
+    </button>
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<input type="file" class="file-input"
+       (change)="onFileSelected($event)" #fileUpload>
+       <div class="progress">
+        <mat-progress-bar class="progress-bar" mode="determinate"
+                          [value]="uploadProgress" *ngIf="uploadProgress">     
+        </mat-progress-bar>
+        <mat-icon class="cancel-upload" (click)="cancelUpload()" 
+                  *ngIf="uploadProgress">delete_forever</mat-icon>
+      </div>
+
+      <div *ngIf="apiResponse">
+        <h3>API Response:</h3>
+        <div>Successful Uploads: {{ successCount }}</div>
+        <div>Failed Uploads: {{ failedCount }}</div>
+        <div>Failure Reasons:</div>
+        <ul>
+          <li *ngFor="let reason of failedReadings">{{ reason }}</li>
+        </ul>
+      </div>

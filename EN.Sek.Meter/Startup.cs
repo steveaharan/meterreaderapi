@@ -28,6 +28,18 @@ public class Startup
 		// Register the Swagger generator, defining one or more Swagger documents
 		services.AddSwaggerGen();
 
+		// Add CORS policy
+		services.AddCors(options =>
+		{
+			options.AddPolicy("AllowAllOrigins",
+				builder =>
+				{
+					builder.AllowAnyOrigin()
+						   .AllowAnyMethod()
+						   .AllowAnyHeader();
+				});
+		});
+
 		services.AddScoped<IAccountDataProvider, AccountDataProvider>();
 		services.AddScoped<IMeterReadingDataProvider, MeterReadingDataProvider>();
 		services.AddScoped<IMeterReadingManager, MeterReadingManager>();
@@ -54,6 +66,9 @@ public class Startup
 		});
 
 		app.UseRouting();
+
+		// Use CORS policy
+		app.UseCors("AllowAllOrigins");
 
 		app.UseAuthorization();
 
