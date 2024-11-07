@@ -48,7 +48,8 @@ public class MeterReadingValidatorTests
 	IMock<IAccountDataProvider> moqAccountDataProvider = null)
 	{
 		return new MeterReadingValidator(
-			moqMeterReadingDataProvider?.Object ?? new Mock<IMeterReadingDataProvider>().Object,
-			moqAccountDataProvider?.Object ?? new Mock<IAccountDataProvider>().Object);
+			moqAccountDataProvider?.Object ?? new Mock<IAccountDataProvider>().Object,
+			moqMeterReadingDataProvider?.Object ?? new Mock<IMeterReadingDataProvider>().Object
+			);
 	}
 }

@@ -67,7 +67,8 @@ public class MeterReadingManagerTests
 
 	private MeterReadingManager CreateManager(
 		IMock<IMeterReadingDataProvider> moqMeterReadingDataProvider = null,
-		IMock<IMeterReadingValidator> moqMeterReadingValidator = null)
+		IMock<IMeterReadingValidator> moqMeterReadingValidator = null
+		)
 	{
 		return new MeterReadingManager(
 			moqMeterReadingDataProvider?.Object ?? new Mock<IMeterReadingDataProvider>().Object,
