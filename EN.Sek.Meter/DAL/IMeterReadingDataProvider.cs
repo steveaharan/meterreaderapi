@@ -8,6 +8,5 @@ namespace EN.Sek.Meter.DAL
 		Task<MeterReading> GetMeterReadingByIdAsync(int id);
 		Task<MeterReading> CreateMeterReadingAsync(MeterReading meterReading);
 		Task<bool> MeterReadingExistsByAccountIdAndDateAsync(MeterReading meterReading);
-		Task CreateMeterReadingsAsync(List<MeterReading> meterReadings);
 	}
 }

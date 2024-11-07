@@ -28,9 +28,9 @@ namespace EN.Sek.Meter.Controllers
 				var response = await _meterReadingManager.BulkMeterReadingAsync(meterReadingCSV);
 				return Ok(response);
 			}
-			catch (Exception ex)
+			catch
 			{
-				return StatusCode(500, $"Error processing meter reading {ex.Message}");
+				return StatusCode(500, "Error processing meter reading");
 			}
 		}
 	}

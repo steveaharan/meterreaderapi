@@ -21,17 +21,12 @@ public class Startup
 	public void ConfigureServices(IServiceCollection services)
 	{
 		services.AddControllers();
-		services.AddSwaggerGen();
 
-		// Register the DbContext with a scoped lifetime
 		services.AddDbContext<ApplicationDbContext>(options =>
 			options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-		// Register other services
-		services.AddScoped<IAccountDataProvider, AccountDataProvider>();
-		services.AddScoped<IMeterReadingDataProvider, MeterReadingDataProvider>();
-		services.AddScoped<IMeterReadingManager, MeterReadingManager>();
-		services.AddScoped<IMeterReadingValidator, MeterReadingValidator>();
+		// Register the Swagger generator, defining one or more Swagger documents
+		services.AddSwaggerGen();
 
 		// Add CORS policy
 		services.AddCors(options =>
@@ -44,8 +39,14 @@ public class Startup
 						   .AllowAnyHeader();
 				});
 		});
+
+		services.AddScoped<IAccountDataProvider, AccountDataProvider>();
+		services.AddScoped<IMeterReadingDataProvider, MeterReadingDataProvider>();
+		services.AddScoped<IMeterReadingManager, MeterReadingManager>();
+		services.AddScoped<IMeterReadingValidator, MeterReadingValidator>();
 	}
 
+	// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 	{
 		if (env.IsDevelopment())
@@ -53,11 +54,15 @@ public class Startup
 			app.UseDeveloperExceptionPage();
 		}
 
+		// Enable middleware to serve generated Swagger as a JSON endpoint.
 		app.UseSwagger();
+
+		// Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+		// specifying the Swagger JSON endpoint.
 		app.UseSwaggerUI(c =>
 		{
 			c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-			c.RoutePrefix = string.Empty;
+			c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
 		});
 
 		app.UseRouting();
