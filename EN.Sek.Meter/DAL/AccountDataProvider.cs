@@ -6,24 +6,25 @@ namespace EN.Sek.Meter.DAL
 	public class AccountDataProvider : IAccountDataProvider
 	{
 		private readonly ApplicationDbContext _context;
+		private readonly IServiceProvider _serviceProvider;
 
-		public AccountDataProvider(ApplicationDbContext context)
+		public AccountDataProvider(ApplicationDbContext context, IServiceProvider serviceProvider)
 		{
 			_context = context;
+			_serviceProvider = serviceProvider;
 		}
 
 		public async Task<bool> AccountExists(int id)
 		{
-			var account = await _context.Account
-				.Include(a => a.MeterReadings)
-				.FirstOrDefaultAsync(a => a.Id == id);
-
-			if (account == null)
+			using (var scope = _serviceProvider.CreateScope())
 			{
-				return false;
+				var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+				var account = await context.Account
+					.Include(a => a.MeterReadings)
+					.AsNoTracking()
+					.FirstOrDefaultAsync(a => a.Id == id);
+				return account != null;
 			}
-
-			return true;
 		}
 
 		public async Task<Account> CreateAccountAsync(Account account)

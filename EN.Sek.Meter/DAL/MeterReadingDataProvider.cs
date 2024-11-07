@@ -7,9 +7,12 @@ namespace EN.Sek.Meter.DAL
 	{
 		private readonly ApplicationDbContext _context;
 
-		public MeterReadingDataProvider(ApplicationDbContext context)
+		private readonly IServiceProvider _serviceProvider;
+
+		public MeterReadingDataProvider(ApplicationDbContext context, IServiceProvider serviceProvider)
 		{
 			_context = context;
+			_serviceProvider = serviceProvider;
 		}
 
 		public async Task<MeterReading> GetMeterReadingByIdAsync(int id)
@@ -28,7 +31,11 @@ namespace EN.Sek.Meter.DAL
 
 		public async Task<bool> MeterReadingExistsByAccountIdAndDateAsync(MeterReading meterReading)
 		{
-			return await _context.MeterReading.AnyAsync(x => x.AccountId == meterReading.AccountId && x.ReadingDateTime == meterReading.ReadingDateTime);
+			using (var scope = _serviceProvider.CreateScope())
+			{
+				var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+				return await context.MeterReading.AsNoTracking().AnyAsync(x => x.AccountId == meterReading.AccountId && x.ReadingDateTime == meterReading.ReadingDateTime);
+			}
 		}
 
 		public async Task<MeterReading> CreateMeterReadingAsync(MeterReading meterReading)
@@ -36,6 +43,12 @@ namespace EN.Sek.Meter.DAL
 			_context.MeterReading.Add(meterReading);
 			await _context.SaveChangesAsync();
 			return meterReading;
+		}
+
+		public async Task CreateMeterReadingsAsync(List<MeterReading> meterReadings)
+		{
+			await _context.MeterReading.AddRangeAsync(meterReadings);
+			await _context.SaveChangesAsync();
 		}
 	}
 }
