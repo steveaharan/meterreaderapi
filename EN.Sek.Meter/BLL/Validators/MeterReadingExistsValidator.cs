@@ -20,8 +20,8 @@ namespace EN.Sek.Meter.BLL
 		{
 			var readingExists = await _meterReadingDataProvider.MeterReadingExistsByAccountIdAndDateAsync(new MeterReading
 			{
-				AccountId = int.Parse(meterReading.AccountId),
-				ReadingDateTime = DateTime.Parse(meterReading.MeterReadingDateTime)
+				AccountId = int.TryParse(meterReading.AccountId, out int accountId) ? accountId : 0,
+				ReadingDateTime = DateTime.TryParse(meterReading.MeterReadingDateTime, out DateTime readingDateTime) ? readingDateTime : DateTime.MinValue
 			});
 
 			if (readingExists)
