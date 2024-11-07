@@ -21,7 +21,6 @@ namespace EN.Sek.Meter.BLL
 		{
 			var result = await PerformValidationAsync(meterReading);
 			var valid = result.Item1;
-			var failReason = result.Item2;
 			if (valid && _nextValidator != null)
 			{
 				return await _nextValidator.ValidateAsync(meterReading);
