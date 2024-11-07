@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using CsvHelper;
@@ -22,6 +23,8 @@ namespace EN.Sek.Meter.BLL
 		{
 			var response = new BulkMeterReadingResponse();
 			var bulkMeterReadingCSVs = new List<BulkMeterReadingCSV>();
+			var meterReadingEntities = new ConcurrentBag<MeterReading>();
+
 			using (var reader = new StreamReader(meterReadingCSV.OpenReadStream()))
 			using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 			{
@@ -29,7 +32,7 @@ namespace EN.Sek.Meter.BLL
 				csv.ReadHeader();
 				var meterReadings = csv.GetRecords<BulkMeterReadingCSV>();
 
-				foreach (var row in meterReadings)
+				await Parallel.ForEachAsync(meterReadings, async (row, cancellationToken) =>
 				{
 					var validationResult = await _meterReadingValidator.ValidateMeterReadingAsync(row);
 					var isValid = validationResult.Item1;
@@ -45,7 +48,7 @@ namespace EN.Sek.Meter.BLL
 							ReadingDateTime = row.MeterReadingDateTime != null ? DateTime.Parse(row.MeterReadingDateTime) : DateTime.MinValue,
 						};
 
-						await _meterReadingDataProvider.CreateMeterReadingAsync(meterReadingEntity);
+						meterReadingEntities.Add(meterReadingEntity);
 						response.SuccessCount++;
 					}
 					else
@@ -54,8 +57,10 @@ namespace EN.Sek.Meter.BLL
 						failureReason = $"{failureReason} (AccountId: {row.AccountId}, MeterReadValue: {row.MeterReadValue}, ReadingDateTime: {row.MeterReadingDateTime})";
 						response.FailedReadings.Add(failureReason);
 					}
-				}
+				});
 			}
+			await _meterReadingDataProvider.CreateMeterReadingsAsync(meterReadingEntities.ToList());
+
 			return response;
 		}
 	}

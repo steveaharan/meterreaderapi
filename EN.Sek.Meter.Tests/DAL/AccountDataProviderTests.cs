@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using EN.Sek.Meter.Entities;
 using EN.Sek.Meter.DAL;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Moq;
+using Microsoft.Extensions.DependencyInjection;
 
 [TestClass]
 public class AccountDataProviderTests
@@ -26,7 +28,11 @@ public class AccountDataProviderTests
         context.Account.Add(account);
         await context.SaveChangesAsync();
 
-        var provider = new AccountDataProvider(context);
+        var serviceProvider = new ServiceCollection()
+            .AddScoped<ApplicationDbContext>(_ => context)
+            .BuildServiceProvider();
+
+        var provider = new AccountDataProvider(context, serviceProvider);
 
         // Act
         var result = await provider.AccountExists(1);
@@ -41,7 +47,9 @@ public class AccountDataProviderTests
     {
         // Arrange
         using var context = new ApplicationDbContext(_dbContextOptions);
-        var provider = new AccountDataProvider(context);
+        var mockServiceProvider = new Mock<IServiceProvider>();
+
+        var provider = new AccountDataProvider(context, mockServiceProvider.Object);
         var account = new Account { FirstName = "Jane", LastName = "Doe" };
 
         // Act
@@ -64,7 +72,9 @@ public class AccountDataProviderTests
     {
         // Arrange
         using var context = new ApplicationDbContext(_dbContextOptions);
-        var provider = new AccountDataProvider(context);
+
+        var mockServiceProvider = new Mock<IServiceProvider>();
+        var provider = new AccountDataProvider(context, mockServiceProvider.Object);
         var account = new Account { Id = 1, FirstName = "John", LastName = "Doe" };
         context.Account.Add(account);
         await context.SaveChangesAsync();
@@ -96,7 +106,8 @@ public class AccountDataProviderTests
     {
         // Arrange
         using var context = new ApplicationDbContext(_dbContextOptions);
-        var provider = new AccountDataProvider(context);
+        var mockServiceProvider = new Mock<IServiceProvider>();
+        var provider = new AccountDataProvider(context, mockServiceProvider.Object);
         var account = new Account { Id = 1, FirstName = "John", LastName = "Doe" };
         context.Account.Add(account);
         await context.SaveChangesAsync();
@@ -117,7 +128,8 @@ public class AccountDataProviderTests
     {
         // Arrange
         using var context = new ApplicationDbContext(_dbContextOptions);
-        var provider = new AccountDataProvider(context);
+        var mockServiceProvider = new Mock<IServiceProvider>();
+        var provider = new AccountDataProvider(context, mockServiceProvider.Object);
 
         // Act & Assert
         await Assert.ThrowsExceptionAsync<ArgumentException>(() => provider.DeleteAccountAsync(99));
